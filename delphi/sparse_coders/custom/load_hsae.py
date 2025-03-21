@@ -1,6 +1,5 @@
 from functools import partial
 
-import numpy as np
 import torch
 import torch.nn as nn
 from safetensors.torch import load_file
@@ -9,6 +8,8 @@ from safetensors.torch import load_file
 - model_path should be a path to the repository with the weights
 - hookpoint should be the same name as for the transformer_lens hookpoint
 """
+
+
 def load_hsae(
     model_path: str,
     hookpoint: str,
@@ -25,6 +26,7 @@ def load_hsae(
     saes[hookpoint] = sae
 
     return saes
+
 
 def load_hsae_hooks(
     model_path: str,
@@ -49,6 +51,7 @@ def load_hsae_hooks(
 
     return hookpoint_to_sparse_encode
 
+
 class HSae(nn.Module):
     def __init__(self, d_model, d_sae, d_sae_h):
         super().__init__()
@@ -66,7 +69,7 @@ class HSae(nn.Module):
 
         self.A = self.encode_h(self.W_enc)
 
-    def update_A(self): 
+    def update_A(self):
         self.A = self.encode_h(self.W_enc)
 
     def encode(self, input_acts):
@@ -74,15 +77,15 @@ class HSae(nn.Module):
         mask = pre_acts > self.threshold
         acts = mask * torch.nn.functional.relu(pre_acts)
         return acts
-    
+
     def encode_double(self, input_acts):
         # acts has shape (batch_size, d_sae)
         acts = self.encode(input_acts)
         # A has shape (d_sae, d_sae_h)
         output = acts @ self.A
         return output
-    
-    def encode_concatenate(self, input_acts): 
+
+    def encode_concatenate(self, input_acts):
         # acts has shape (batch_size, d_sae)
         acts = self.encode(input_acts)
         # A has shape (d_sae, d_sae_h)
@@ -106,7 +109,11 @@ class HSae(nn.Module):
     @classmethod
     def from_pretrained(cls, model_name_or_path, device):
         params = load_file(model_name_or_path + "/sae_weights.safetensors")
-        model = cls(params["W_enc"].shape[0], params["W_enc"].shape[1], params["W_enc_h"].shape[1])
+        model = cls(
+            params["W_enc"].shape[0],
+            params["W_enc"].shape[1],
+            params["W_enc_h"].shape[1],
+        )
         model.load_state_dict(params)
         model.update_A()
         if device == "cuda":
