@@ -7,7 +7,6 @@ from transformers import PreTrainedModel
 
 from delphi.config import RunConfig
 
-from .custom.gemmascope import load_gemma_autoencoders
 from .load_sparsify import load_sparsify_hooks, load_sparsify_sparse_coders
 
 
