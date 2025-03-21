@@ -55,7 +55,7 @@ def load_hooks_sparse_coders(
             sae_sizes.append(sae_size)
             l0s.append(l0)
 
-        hookpoint_to_sparse_encode = load_gemma_autoencoders(
+        hookpoint_to_sparse_encode = load_gemma_hooks(
             model_path=model_path,
             ae_layers=layers,
             average_l0s=l0s,
@@ -115,7 +115,7 @@ def load_sparse_coders(
             sae_sizes.append(sae_size)
             l0s.append(l0)
 
-        hookpoint_to_sparse_model = load_gemma_autoencoders(
+        hookpoint_to_sparse_model = load_gemma_hooks(
             model_path=model_path,
             ae_layers=layers,
             average_l0s=l0s,
