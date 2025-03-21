@@ -7,8 +7,9 @@ from transformers import PreTrainedModel
 
 from delphi.config import RunConfig
 
+from .custom.gemmascope import load_gemma_hooks
+from .custom.load_hsae import load_hsae_hooks
 from .load_sparsify import load_sparsify_hooks, load_sparsify_sparse_coders
-
 
 def load_hooks_sparse_coders(
     model: PreTrainedModel,
@@ -26,8 +27,29 @@ def load_hooks_sparse_coders(
         dict[str, Callable]: A dictionary mapping hookpoints to sparse coders.
     """
 
+    """
+    !!!
+    sparse_model is the name of the checkpoint file where the weigths are stored, and it should contain hsae.
+    """
+
     # Add SAE hooks to the model
-    if "gemma" not in run_cfg.sparse_model:
+    if "hsae" in run_cfg.sparse_model: 
+        # there should only be one hookpoint 
+        assert len(run_cfg.hookpoints) == 1
+        hookpoint = run_cfg.hookpoints[0]
+
+        # the name of the hookpoint should be for eg. blocks.8.hook_resid_post
+
+        # TODO: has to be more general
+        model_path = "../checkpoints/hsae/" + run_cfg.sparse_model
+
+        hookpoint_to_sparse_encode = load_hsae_hooks(
+            model_path=model_path,
+            hookpoint=hookpoint,
+            dtype=model.dtype,
+            device=model.device,
+        )
+    elif "gemma" not in run_cfg.sparse_model:
         hookpoint_to_sparse_encode, transcode = load_sparsify_hooks(
             model,
             run_cfg.sparse_model,
